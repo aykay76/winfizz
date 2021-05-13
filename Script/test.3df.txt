@@ -1,0 +1,23 @@
+System:init
+{
+	System:Textures:Add("face", "C:\myphoto.jpg").
+	System:Objects:Add("cubey").
+	System:Timers:Add("10ms", 10).
+	
+	cubey:Texture="face".
+}
+
+10ms:update
+{
+	System:Objects["cubey"]:rotate(10, 0, 0, 100).
+	
+	foreach System:Object o
+	{
+		o:rotate(0, 10, 0).
+	}
+}
+
+System:mouseMove
+{
+	System:Objects:Add("ellipse").
+}

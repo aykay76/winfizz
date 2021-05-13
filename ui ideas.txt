@@ -1,0 +1,22 @@
+When creating scenario, create folder for all items. Meshes and textures can then be copied into that folder.
+
+Need file format for mesh. Mesh can contain submeshes.
+
+General options:
+
+Insert object types
+Import mesh, custom format and standard formats
+Import vertex coordinates from CSV
+Insert camera
+Insert light
+
+Main window shows scene
+
+Click on object to change position, orientation etc.
+Need groovy way of representing rotation
+Buttons to edit texture coordinates, normals etc.
+Edit vertices
+
+Materials editor - allow import (copy) of textures, setup all other associated material parameters
+		 - have preview of material reacting in realtime
+

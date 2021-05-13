@@ -1,0 +1,65 @@
+Internal objects involved in creating animatable entities:
+----------------------------------------------------------
+
+Vertex
+x, y, z -> real			// coordinate
+r, g, b -> real			// colour
+nx, ny, nz -> real		// vertex normal
+u, v -> real			// texture coordinate
+
+Texture
+name -> string
+
+Material			// the material a mesh is 'made of'
+texture -> Texture
+shininess -> real
+dr, dg, db -> real		// diffuse reflection
+er, eg, eb -> real		// light emission
+sr, sg, sb -> real		// specular reflection
+name -> string
+
+Mesh				// a single mesh comprises one self-contained object
+material -> Material
+vertices -> Vertex[]
+triangles -> int[]
+name -> string
+
+Template			// multiple meshes come together in a template
+meshes -> Mesh[]
+name -> string
+
+Entity				// a concrete instantiation of a template
+x, y, z -> real			// position
+ax, ay, az -> real		// orientation
+template -> Template
+name -> string
+
+
+Other internal objects
+
+Light
+x, y, z -> real
+ax, ay, az -> real
+sr, sg, sb -> real
+dr, dg, db -> real
+
+Camera
+x, y, z -> real			// position
+ax, ay, az -> real		// orientation
+zoom -> real			// not yet, but would be nice in the future
+
+
+All values in the script system are reference values which will dereference to internal c++ variables. For example, the most complex being the vertex array:
+
+vertex[0] actually points to the vertex array in the internal object in the C++ code 
+
+in a scriptlet something like: vertex[0].x = 10.0. will set the value in the C++ code rather than populating an item in the symbol table. The parser recognises that a variable is on the left of an assignment operator and calls the appropriate dispatch function in order to set the parameter.
+
+in the parsing rules however, when the [ operator is reached the parser needs to know what it is indexing, and that it is indeed an array type - it substitutes the [ token for a call to get_item - the subsequent . operator will then need to know that what was returned is an object so that it can access the x member.
+
+when it comes to execution - the executor needs to call the set function on the vertex object in order to set the x value in the assignment expression. it therefore needs to know which object to call this on and how to get to it. If this isn't being done with the symbol table how?
+
+So we only add a node in the symbol table for the collection - any [ operator will be transformed into a get_item function call. the dispatcher for the call will be stored in the node. For the executor to know which object we are referencing when it encounters a member access token, there will have to be a reference to the type in the symbol table. the type will then validate the member exists and what it is (in this case a parameter of type real) so that the executor can then call the get/set function. This in turn needs a dispatcher for the vertex object. The collection needs a base type so that if the base type is an object, the result of the get_item call can be cast to a dispatcher. if the collection has a primitive base type, the result of the get_item call will be a DataType with a reference to the original value.
+
+
+Items exposed by an application must be derived from the base class (base). These items will have one of the following types; Object, Collection, Method, Parameter. This gives the parser enough information to successfully parse a script and know where a method or parameter is being used appropriately. Object and Collection will have methods of their own which will allow the manipulation of parameters and the invocation of methods. The method and parameter nodes will reference the object that contains the method or parameter respectively.
